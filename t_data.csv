@@ -1,0 +1,15 @@
+file_name,text
+t1.png,Text recognition is a long standing research problem.
+t2.png,Optical Character Recognition (OCR) is the electronic
+t3.png,TrOCR is built up with the Transformer architecture.
+t4.png,When loading the above models to the decoders
+t5.png,The structures do not precisely match
+t6.png,We use the text-recognition task for pre-training
+t7.png,Except for the exerpiments regarding scene text recognition
+t8.png,Six kinds of image transformations plus keeping the original.
+t9.png,To build a large-scale high-quality dataset.
+t10.png,We sample two million documents.
+t11.png,We use 5247 handwritten texts to synthesize handwriting.
+t12.png,Table 1 shows the results of combined models.
+t13.png,From the results we observe that the BEiT encoders show
+t14.png,For text recognition the most popular approaches.
