@@ -74,7 +74,7 @@ def get_dataloaders(dataset_type='t', test_size=0.2, batch_size=4):
 
     if dataset_type=='t':
         root = Path(__file__).parents[1]
-        df = pd.read_csv(f'{root}/data/t_data.csv')
+        df = pd.read_csv(f'{root}/data/thomas_writing/t_data.csv')
         train_df, test_df = train_test_split(df, test_size=test_size)
         # we reset the indices to start from zero
         train_df.reset_index(drop=True, inplace=True)
