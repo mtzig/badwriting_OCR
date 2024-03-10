@@ -86,6 +86,20 @@ def get_dataloaders(dataset_type='t', test_size=0.2, batch_size=4):
         eval_dataset = IAMDataset(root_dir=f'{root}/data/thomas_writing/',
                                 df=test_df,
                                 processor=processor)
+    elif dataset_type=='a':
+        root = Path(__file__).parents[1]
+        df = pd.read_csv(f'{root}/data/thomas_writing/t_data.csv')
+        train_df, test_df = train_test_split(df, test_size=test_size)
+        # we reset the indices to start from zero
+        train_df.reset_index(drop=True, inplace=True)
+        test_df.reset_index(drop=True, inplace=True)
+
+        train_dataset = IAMDataset(root_dir=f'{root}/data/alex_writing/',
+                                df=train_df,
+                                processor=processor)
+        eval_dataset = IAMDataset(root_dir=f'{root}/data/alex_writing/',
+                                df=test_df,
+                                processor=processor)
     else:
         raise ValueError('dataset_type must be "t" or ...')
     
