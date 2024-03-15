@@ -108,10 +108,10 @@ def get_dataloaders(dataset_type='t', test_size=0.2, batch_size=4, root=''):
         train_df.reset_index(drop=True, inplace=True)
         test_df.reset_index(drop=True, inplace=True)
 
-        train_dataset = IAMDataset(root_dir=root+'/sentences/',
+        train_dataset = IAMDataset(root_dir=root+'/lines/',
                                 df=train_df,
                                 processor=processor)
-        eval_dataset = IAMDataset(root_dir=root+'/sentences/', # sentences or lines ?
+        eval_dataset = IAMDataset(root_dir=root+'/lines/', # sentences or lines ?
                                 df=test_df,
                                 processor=processor)
     else:
