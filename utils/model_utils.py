@@ -70,7 +70,7 @@ class IAMDataset(Dataset):
         encoding = {"pixel_values": pixel_values.squeeze(), "labels": torch.tensor(labels)}
         return encoding
 
-def get_dataloaders(dataset_type='t', test_size=0.2, batch_size=4):
+def get_dataloaders(dataset_type='t', test_size=0.2, batch_size=4, root=''):
 
     if dataset_type=='t':
         root = Path(__file__).parents[1]
@@ -98,6 +98,20 @@ def get_dataloaders(dataset_type='t', test_size=0.2, batch_size=4):
                                 df=train_df,
                                 processor=processor)
         eval_dataset = IAMDataset(root_dir=f'{root}/data/alex_writing/',
+                                df=test_df,
+                                processor=processor)
+    elif dataset_type=='iam':
+        # if we are using the iam dataset, need to use the optinoal root param to point to where it is
+        df = pd.read_csv(root+'/iam_data.csv') # root should be iam_path
+        train_df, test_df = train_test_split(df, test_size=test_size)
+        # we reset the indices to start from zero
+        train_df.reset_index(drop=True, inplace=True)
+        test_df.reset_index(drop=True, inplace=True)
+
+        train_dataset = IAMDataset(root_dir=root+'/sentences',
+                                df=train_df,
+                                processor=processor)
+        eval_dataset = IAMDataset(root_dir=root+'/sentences', # sentences or lines ?
                                 df=test_df,
                                 processor=processor)
     else:
