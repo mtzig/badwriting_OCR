@@ -12,24 +12,25 @@ from transformers import VisionEncoderDecoderModel
 cer_metric = load_metric("cer")
 processor = TrOCRProcessor.from_pretrained("microsoft/trocr-small-handwritten")
 
-def getModel(device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+def getModel(use_config=False, device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 ):
     model = VisionEncoderDecoderModel.from_pretrained("microsoft/trocr-small-handwritten")
     model.to(device)
 
-    # # set special tokens used for creating the decoder_input_ids from the labels
-    # model.config.decoder_start_token_id = processor.tokenizer.cls_token_id
-    # model.config.pad_token_id = processor.tokenizer.pad_token_id
-    # # make sure vocab size is set correctly
-    # model.config.vocab_size = model.config.decoder.vocab_size
+    # set special tokens used for creating the decoder_input_ids from the labels
+    model.config.decoder_start_token_id = processor.tokenizer.cls_token_id
+    model.config.pad_token_id = processor.tokenizer.pad_token_id
+    # make sure vocab size is set correctly
+    model.config.vocab_size = model.config.decoder.vocab_size
 
-    # # set beam search parameters
-    # model.config.eos_token_id = processor.tokenizer.sep_token_id
-    # model.config.max_length = 64
-    # model.config.early_stopping = True
-    # model.config.no_repeat_ngram_size = 3
-    # model.config.length_penalty = 2.0
-    # model.config.num_beams = 4
+    if use_config:
+        # set beam search parameters
+        model.config.eos_token_id = processor.tokenizer.sep_token_id
+        model.config.max_length = 64
+        model.config.early_stopping = True
+        model.config.no_repeat_ngram_size = 3
+        model.config.length_penalty = 2.0
+        model.config.num_beams = 4
 
     return model
 
