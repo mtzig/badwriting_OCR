@@ -103,7 +103,7 @@ def get_dataloaders(dataset_type='t', test_size=0.2, batch_size=4, root=''):
                                 processor=processor)
     elif dataset_type=='iam':
         # if we are using the iam dataset, need to use the optinoal root param to point to where it is
-        df = pd.read_csv(root+'/iam_data.csv') # root should be iam_path
+        df = pd.read_csv(root+'/iam_data_test.csv') # root should be iam_path
         df = df.head(61) # 61 b/c that is the size of Thomas' dataset and using the whole thing takes way too long
         train_df, test_df = train_test_split(df, test_size=test_size)
         # we reset the indices to start from zero
