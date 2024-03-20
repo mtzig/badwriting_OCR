@@ -17,13 +17,11 @@ def getModel(use_config=False, device = torch.device("cuda" if torch.cuda.is_ava
     model = VisionEncoderDecoderModel.from_pretrained("microsoft/trocr-small-handwritten")
     model.to(device)
 
-    ''' Temporarily removed by alex
     # set special tokens used for creating the decoder_input_ids from the labels
     model.config.decoder_start_token_id = processor.tokenizer.cls_token_id
     model.config.pad_token_id = processor.tokenizer.pad_token_id
     # make sure vocab size is set correctly
     model.config.vocab_size = model.config.decoder.vocab_size
-    '''
 
     if use_config:
         # set beam search parameters
