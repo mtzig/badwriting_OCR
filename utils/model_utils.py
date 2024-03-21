@@ -71,7 +71,7 @@ class IAMDataset(Dataset):
         encoding = {"pixel_values": pixel_values.squeeze(), "labels": torch.tensor(labels)}
         return encoding
 
-def get_dataloaders(dataset_type='t', test_size=0.2, batch_size=4, root='', csv='/iam_data_test.csv', test=False):
+def get_dataloaders(dataset_type='t', test_size=0.2, batch_size=4, root='', test=False):
 
     if dataset_type=='t':
         root = Path(__file__).parents[1]
@@ -103,14 +103,18 @@ def get_dataloaders(dataset_type='t', test_size=0.2, batch_size=4, root='', csv=
                                 processor=processor)
     elif dataset_type=='iam':
         # if we are using the iam dataset, need to use the optinoal root param to point to where it is
-        df = pd.read_csv(root + csv) # root should be iam_path
+        # df = pd.read_csv(root + csv) # root should be iam_path
 
         # If we are just testing, don't do any splitting, just return the whole df for both train and test
         if test:
-            train_df = df
-            test_df = df
+            train_df = pd.read_csv(root + '/iam_data_test.csv')
+            test_df = pd.read_csv(root + '/iam_data_test.csv')
+            # train_df = df
+            # test_df = df
         else:
-            train_df, test_df = train_test_split(df, test_size=test_size)
+            # train_df, test_df = train_test_split(df, test_size=test_size)
+            train_df = pd.read_csv(root + '/iam_data_train.csv')
+            test_df = pd.read_csv(root + '/iam_data_val1.csv')
             
         # we reset the indices to start from zero
         train_df.reset_index(drop=True, inplace=True)
