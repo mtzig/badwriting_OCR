@@ -668,9 +668,11 @@ class TrOCRDecoder(TrOCRPreTrainedModel):
             cross_attentions=all_cross_attentions,
         )
         
-from transformers.models.trocr import TrOCRAttention
+from transformers.models.trocr.modeling_trocr import TrOCRAttention
 import torch.nn as nn
 from transformers.activations import ACT2FN
+
+from transformers.models.trocr.configuration_trocr import TrOCRConfig
 
 class MyTrOCRDecoderLayer(nn.Module):
     def __init__(self, config):
