@@ -8,6 +8,10 @@ from transformers import TrOCRProcessor
 from datasets import load_metric
 from transformers import VisionEncoderDecoderModel
 
+import os
+import json
+import random
+import numpy as np
 
 cer_metric = load_metric("cer")
 processor = TrOCRProcessor.from_pretrained("microsoft/trocr-small-handwritten")
