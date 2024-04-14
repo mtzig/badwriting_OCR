@@ -100,6 +100,145 @@ class IAMDatasetAugmented(Dataset):
         encoding = {"pixel_values": pixel_values.squeeze(), "labels": torch.tensor(labels)}
         return encoding
 
+
+class IAM_fewshot_dataset(Dataset):
+    def __init__(self,
+                 image_dir,
+                 meta_filename,
+                 processor,
+                 max_target_length=128,
+                 episode_num=600,
+                 shot=5,):
+
+        self.image_dir = image_dir
+        self.episode_num = episode_num
+        self.shot = shot
+        self.processor = processor
+        self.max_target_length = max_target_length
+
+        with open(meta_filename, 'r') as json_file:
+            meta_data = json.load(json_file)
+
+        for i in range(len(meta_data)):
+            sample = meta_data[i]
+            dir = os.path.join(image_dir, sample['image_dir'])
+            if not os.path.exists(dir):
+                print(dir, os.path.exists(dir))
+                raise Exception
+
+        self._writer_id_to_ind = {}
+        writer_ind = 0
+        for sample in meta_data:
+            if sample['writer_id'] not in self._writer_id_to_ind:
+                self._writer_id_to_ind[sample['writer_id']] = writer_ind
+                writer_ind += 1
+
+        self._ind_to_writer_id = {value: key for key, value in self._writer_id_to_ind.items()}
+
+        self.writer_samples = [[] for ind in self._ind_to_writer_id]
+        for sample in meta_data:
+            writer_id = sample['writer_id']
+            writer_ind = self._writer_id_to_ind[writer_id]
+            self.writer_samples[writer_ind].append(sample)
+
+        self.writer_num = len(self.writer_samples)
+
+    def __len__(self,):
+        return self.episode_num
+
+    def get_encoding(self, sample):
+        # get file name + text
+        file_name = os.path.join(self.image_dir, sample['image_dir'])
+        text = ' '.join(sample['transcription'])
+
+        # prepare image (i.e. resize + normalize)
+        image = Image.open(file_name).convert("RGB")
+        pixel_values = self.processor(image, return_tensors="pt").pixel_values
+        # add labels (input_ids) by encoding the text
+        labels = self.processor.tokenizer(text,
+                                          padding="max_length",
+                                          max_length=self.max_target_length).input_ids
+        # important: make sure that PAD tokens are ignored by the loss function
+        labels = [label if label != self.processor.tokenizer.pad_token_id else -100 for label in labels]
+
+        encoding = {"pixel_values": pixel_values.squeeze(), "labels": torch.tensor(labels)}
+        return encoding
+
+
+    def __getitem__(self, idx):
+        # get writer
+        while True:
+            writer_ind = np.random.randint(0, self.writer_num)
+            samples = self.writer_samples[writer_ind]
+            if len(samples) > self.shot:
+                break
+
+        random.shuffle(samples)
+        supports = samples[:self.shot]
+        query = samples[self.shot]
+
+        supports = [self.get_encoding(sample) for sample in supports]
+        query = self.get_encoding(query)
+
+        pixel_values = []
+        labels = []
+        for batch in supports:
+            pixel_values.append(batch['pixel_values'])
+            labels.append(batch['labels'])
+        pixel_values = torch.stack(pixel_values, 0)
+        labels = torch.stack(labels, 0)
+        supports = {'pixel_values': pixel_values, "labels": labels}
+        return supports, query
+    
+
+class IAM_global_dataset(Dataset):
+    def __init__(self,
+                 image_dir,
+                 meta_filename,
+                 processor,
+                 max_target_length=128):
+
+        self.image_dir = image_dir
+        self.processor = processor
+        self.max_target_length = max_target_length
+
+        with open(meta_filename, 'r') as json_file:
+            self.meta_data = json.load(json_file)
+
+        for i in range(len(self.meta_data)):
+            sample = self.meta_data[i]
+            dir = os.path.join(image_dir, sample['image_dir'])
+            if not os.path.exists(dir):
+                print(dir, os.path.exists(dir))
+                raise Exception
+
+    def __len__(self,):
+        return len(self.meta_data)
+
+    def get_encoding(self, sample):
+        # get file name + text
+        file_name = os.path.join(self.image_dir, sample['image_dir'])
+        text = ' '.join(sample['transcription'])
+
+        # prepare image (i.e. resize + normalize)
+        image = Image.open(file_name).convert("RGB")
+        pixel_values = self.processor(image, return_tensors="pt").pixel_values
+        # add labels (input_ids) by encoding the text
+        labels = self.processor.tokenizer(text,
+                                          padding="max_length",
+                                          max_length=self.max_target_length).input_ids
+        # important: make sure that PAD tokens are ignored by the loss function
+        labels = [label if label != self.processor.tokenizer.pad_token_id else -100 for label in labels]
+
+        encoding = {"pixel_values": pixel_values.squeeze(), "labels": torch.tensor(labels)}
+        return encoding
+
+
+    def __getitem__(self, idx):
+        sample = self.meta_data[idx]
+        sample = self.get_encoding(sample)
+        return sample
+
 def get_dataloaders(dataset_type='t', test_size=0.2, batch_size=4, root='', test=False, transform=None):
 
     if dataset_type=='t':
