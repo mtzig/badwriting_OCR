@@ -303,6 +303,22 @@ def get_dataloaders(dataset_type='t', test_size=0.2, batch_size=4, root='', test
         eval_dataset = IAMDataset(root_dir=root+'/lines/', # sentences or lines ?
                                 df=test_df,
                                 processor=processor)
+    elif dataset_type=='iam_fewshot':
+        sentence_path = f'{root}/data/IAM/sentences'
+        global_train_dataset = IAM_global_dataset(sentence_path, f'{root}/data/IAM/meta_train_data.json', processor=processor)
+
+        fewshot_train_dataset = IAM_fewshot_dataset( sentence_path, f'{root}/data/IAM/meta_train_data.json', processor=processor)
+        fewshot_test_dataset = IAM_fewshot_dataset(sentence_path, f'{root}/data/IAM/meta_test_data.json', processor=processor)
+        fewshot_val_dataset = IAM_fewshot_dataset( sentence_path, f'{root}/data/IAM/meta_val_data.json', processor=processor)
+
+        global_train_dataloader = DataLoader(global_train_dataset, batch_size=batch_size)
+
+        fewshot_train_dataloader = DataLoader(fewshot_train_dataset, batch_size=1)
+        fewshot_test_dataloader = DataLoader(fewshot_test_dataset, batch_size=1)
+        fewshot_val_dataloader = DataLoader(fewshot_val_dataset, batch_size=1)
+
+        return global_train_dataloader, fewshot_train_dataloader, fewshot_val_dataloader, fewshot_test_dataloader
+     
     else:
         raise ValueError('dataset_type must be "t" or ...')
     
