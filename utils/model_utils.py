@@ -12,6 +12,7 @@ import os
 import json
 import random
 import numpy as np
+from collections import defaultdict
 
 cer_metric = load_metric("cer")
 processor = TrOCRProcessor.from_pretrained("microsoft/trocr-small-handwritten")
@@ -38,11 +39,12 @@ def getModel(use_config=False, device = torch.device("cuda" if torch.cuda.is_ava
 
     return model
 
-def compute_cer(pred_ids, label_ids):
+def compute_cer(pred_ids, label_ids, debug=False):
     pred_str = processor.batch_decode(pred_ids, skip_special_tokens=True)
     label_ids[label_ids == -100] = processor.tokenizer.pad_token_id
     label_str = processor.batch_decode(label_ids, skip_special_tokens=True)
-
+    if debug:
+        print(pred_str, label_str)
     cer = cer_metric.compute(predictions=pred_str, references=label_str)
 
     return cer
@@ -243,6 +245,69 @@ class IAM_global_dataset(Dataset):
         sample = self.get_encoding(sample)
         return sample
 
+class IAMDatasetFromList(Dataset):
+    def __init__(self, data_list, processor, max_target_length=128):
+        self.processor = processor
+        self.max_target_length = max_target_length
+        self.data_list = data_list
+
+    def __len__(self):
+        return len(self.data_list)
+
+    def __getitem__(self, idx):
+        # get file name + text
+        file_name, text = self.data_list[idx]
+        # prepare image (i.e. resize + normalize)
+        image = Image.open(file_name).convert("RGB")
+        pixel_values = self.processor(image, return_tensors="pt").pixel_values
+        # add labels (input_ids) by encoding the text
+        labels = self.processor.tokenizer(text,
+                                          padding="max_length",
+                                          max_length=self.max_target_length).input_ids
+        # important: make sure that PAD tokens are ignored by the loss function
+        labels = [label if label != self.processor.tokenizer.pad_token_id else -100 for label in labels]
+
+        encoding = {"pixel_values": pixel_values.squeeze(), "labels": torch.tensor(labels)}
+        return encoding
+    
+class IAM_MAML_Outer(Dataset):
+
+    def __init__(self, image_dir, meta_filename, processor, max_target_length=128, inner_batch_size=4, sample_thresh=10):
+        
+        self.processor = processor
+        self.max_target_length = max_target_length
+        self.inner_batch_size = inner_batch_size
+        self.wd = tuple(self.sort_by_writer(image_dir, meta_filename, sample_thresh).values())
+
+
+
+    def sort_by_writer(self, image_dir, meta_filename, sample_thresh=10):
+        '''
+        Only keep writer id's with at least sample_thres examples
+        '''
+    
+        with open(meta_filename, 'r') as json_file:
+            meta_data = json.load(json_file)
+
+        writer_datas = defaultdict(list)
+        for sample in meta_data:
+            file_path =  os.path.join(image_dir, sample['image_dir'])
+            text = ' '.join(sample['transcription'])
+            writer_datas[sample['writer_id']].append((file_path, text))
+        
+        for key in list(writer_datas.keys()):
+            if len(writer_datas[key]) < 10:
+                del writer_datas[key]
+
+        return writer_datas
+    
+    def __len__(self,):
+        return len(self.wd)
+    
+    def __getitem__(self, index):
+        dataset = IAMDatasetFromList(self.wd[index], self.processor, self.max_target_length)
+        return DataLoader(dataset, batch_size=self.inner_batch_size)
+
 def get_dataloaders(dataset_type='t', test_size=0.2, batch_size=4, root='', test=False, transform=None):
 
     if dataset_type=='t':
@@ -318,7 +383,15 @@ def get_dataloaders(dataset_type='t', test_size=0.2, batch_size=4, root='', test
         fewshot_val_dataloader = DataLoader(fewshot_val_dataset, batch_size=1)
 
         return global_train_dataloader, fewshot_train_dataloader, fewshot_val_dataloader, fewshot_test_dataloader
-     
+    elif dataset_type =='iam_maml':
+
+        # for now just hardcode these values as I am lazy
+        image_dir = './data/IAM/sentences/'
+        meta_filename = './data/IAM/aa_te.json'
+
+        dataset = IAM_MAML_Outer(image_dir, meta_filename, processor)
+        return DataLoader(dataset, batch_size=None, shuffle=True)
+
     else:
         raise ValueError('dataset_type must be "t" or ...')
     
