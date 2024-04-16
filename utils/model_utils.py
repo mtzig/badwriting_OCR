@@ -678,9 +678,9 @@ my_config = TrOCRConfig(activation_dropout=0.0,
 class FinetuneAdaptor(nn.Module):
     def __init__(self, dim):
         super().__init__()
-        self.input_mapping = nn.Linear(dim, dim*2)
+        self.input_mapping = nn.Linear(dim, dim//2)
         # self.middle_mapping = nn.Linear(dim*2, dim*2)
-        self.output_mapping = nn.Linear(dim*2, dim)
+        self.output_mapping = nn.Linear(dim//2, dim)
         self.act = nn.ReLU(inplace=False)
         
     def forward(self, feat):
