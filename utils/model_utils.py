@@ -410,3 +410,225 @@ def classify_img(img, model):
   generated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
 
   print(generated_text)
+
+
+from transformers import VisionEncoderDecoderModel
+import torch
+
+from transformers.models.vision_encoder_decoder.modeling_vision_encoder_decoder import VISION_ENCODER_DECODER_INPUTS_DOCSTRING, _CONFIG_FOR_DOC, shift_tokens_right
+from transformers.modeling_outputs import BaseModelOutput, Seq2SeqLMOutput
+from transformers.utils import add_start_docstrings, add_start_docstrings_to_model_forward, logging, replace_return_docstrings
+from torch.nn import CrossEntropyLoss
+from copy import deepcopy
+
+class MyDualDecoderVisionEncoderDecoderModel(VisionEncoderDecoderModel):
+    @classmethod
+    def from_pretrained(cls, pretrained_model_name_or_path, *model_args, **kwargs):
+        r"""
+        Example:
+
+        ```python
+        >>> from transformers import VisionEncoderDecoderModel, AutoImageProcessor, AutoTokenizer
+        >>> from PIL import Image
+        >>> import requests
+
+        >>> image_processor = AutoImageProcessor.from_pretrained("ydshieh/vit-gpt2-coco-en")
+        >>> decoder_tokenizer = AutoTokenizer.from_pretrained("ydshieh/vit-gpt2-coco-en")
+        >>> model = VisionEncoderDecoderModel.from_pretrained("ydshieh/vit-gpt2-coco-en")
+
+        >>> url = "http://images.cocodataset.org/val2017/000000039769.jpg"
+        >>> img = Image.open(requests.get(url, stream=True).raw)
+        >>> pixel_values = image_processor(images=img, return_tensors="pt").pixel_values  # Batch size 1
+
+        >>> output_ids = model.generate(
+        ...     pixel_values, max_length=16, num_beams=4, return_dict_in_generate=True
+        ... ).sequences
+
+        >>> preds = decoder_tokenizer.batch_decode(output_ids, skip_special_tokens=True)
+        >>> preds = [pred.strip() for pred in preds]
+
+        >>> assert preds == ["a cat laying on top of a couch next to another cat"]
+        ```"""
+
+        from_tf = kwargs.pop("from_tf", False)
+        if from_tf:
+            raise not NotImplementedError
+        # At the moment fast initialization is not supported for composite models
+        # if kwargs.get("_fast_init", False):
+        #     logger.warning(
+        #         "Fast initialization is currently not supported for VisionEncoderDecoderModel. "
+        #         "Falling back to slow initialization..."
+        #     )
+        kwargs["_fast_init"] = False
+
+        model = super().from_pretrained(pretrained_model_name_or_path, *model_args, **kwargs)
+        model.decoder2 = deepcopy(model.decoder)
+        return model
+
+    @add_start_docstrings_to_model_forward(VISION_ENCODER_DECODER_INPUTS_DOCSTRING)
+    @replace_return_docstrings(output_type=Seq2SeqLMOutput, config_class=_CONFIG_FOR_DOC)
+    def forward(
+        self,
+        pixel_values = None,
+        decoder_input_ids = None,
+        decoder_attention_mask = None,
+        encoder_outputs = None,
+        past_key_values = None,
+        decoder_inputs_embeds = None,
+        labels = None,
+        use_cache = None,
+        output_attentions = None,
+        output_hidden_states = None,
+        return_dict = None,
+        **kwargs,
+    ):
+        r"""
+        Returns:
+
+        Examples:
+
+        ```python
+        >>> from transformers import AutoProcessor, VisionEncoderDecoderModel
+        >>> import requests
+        >>> from PIL import Image
+        >>> import torch
+
+        >>> processor = AutoProcessor.from_pretrained("microsoft/trocr-base-handwritten")
+        >>> model = VisionEncoderDecoderModel.from_pretrained("microsoft/trocr-base-handwritten")
+
+        >>> # load image from the IAM dataset
+        >>> url = "https://fki.tic.heia-fr.ch/static/img/a01-122-02.jpg"
+        >>> image = Image.open(requests.get(url, stream=True).raw).convert("RGB")
+
+        >>> # training
+        >>> model.config.decoder_start_token_id = processor.tokenizer.cls_token_id
+        >>> model.config.pad_token_id = processor.tokenizer.pad_token_id
+        >>> model.config.vocab_size = model.config.decoder.vocab_size
+
+        >>> pixel_values = processor(image, return_tensors="pt").pixel_values
+        >>> text = "hello world"
+        >>> labels = processor.tokenizer(text, return_tensors="pt").input_ids
+        >>> outputs = model(pixel_values=pixel_values, labels=labels)
+        >>> loss = outputs.loss
+
+        >>> # inference (generation)
+        >>> generated_ids = model.generate(pixel_values)
+        >>> generated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
+        ```"""
+        return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+
+        kwargs_encoder = {argument: value for argument, value in kwargs.items() if not argument.startswith("decoder_")}
+
+        kwargs_decoder = {
+            argument[len("decoder_") :]: value for argument, value in kwargs.items() if argument.startswith("decoder_")
+        }
+
+        if encoder_outputs is None:
+            if pixel_values is None:
+                raise ValueError("You have to specify pixel_values")
+
+            encoder_outputs = self.encoder(
+                pixel_values,
+                output_attentions=output_attentions,
+                output_hidden_states=output_hidden_states,
+                return_dict=return_dict,
+                **kwargs_encoder,
+            )
+        elif isinstance(encoder_outputs, tuple):
+            encoder_outputs = BaseModelOutput(*encoder_outputs)
+
+        encoder_hidden_states = encoder_outputs[0]
+
+        # optionally project encoder_hidden_states
+        if (
+            self.encoder.config.hidden_size != self.decoder.config.hidden_size
+            and self.decoder.config.cross_attention_hidden_size is None
+        ):
+            encoder_hidden_states = self.enc_to_dec_proj(encoder_hidden_states)
+
+        # else:
+        encoder_attention_mask = None
+
+        if (labels is not None) and (decoder_input_ids is None and decoder_inputs_embeds is None):
+            decoder_input_ids = shift_tokens_right(
+                labels, self.config.pad_token_id, self.config.decoder_start_token_id
+            )
+
+        # Decode
+        decoder_outputs = self.decoder(
+            input_ids=decoder_input_ids,
+            attention_mask=decoder_attention_mask,
+            encoder_hidden_states=encoder_hidden_states,
+            encoder_attention_mask=encoder_attention_mask,
+            inputs_embeds=decoder_inputs_embeds,
+            output_attentions=output_attentions,
+            output_hidden_states=output_hidden_states,
+            use_cache=use_cache,
+            past_key_values=past_key_values,
+            return_dict=return_dict,
+            **kwargs_decoder,
+        )
+        
+        decoder2_outputs = self.decoder2(
+            input_ids=decoder_input_ids,
+            attention_mask=decoder_attention_mask,
+            encoder_hidden_states=encoder_hidden_states,
+            encoder_attention_mask=encoder_attention_mask,
+            inputs_embeds=decoder_inputs_embeds,
+            output_attentions=output_attentions,
+            output_hidden_states=output_hidden_states,
+            use_cache=use_cache,
+            past_key_values=past_key_values,
+            return_dict=return_dict,
+            **kwargs_decoder,
+        )        
+        
+
+        # Compute loss independent from decoder (as some shift the logits inside them)
+        loss = None
+        if labels is not None:
+            logits = decoder_outputs.logits + decoder2_outputs.logits if return_dict else decoder_outputs[0]
+            loss_fct = CrossEntropyLoss()
+            loss = loss_fct(logits.reshape(-1, self.decoder.config.vocab_size), labels.reshape(-1))
+
+        if not return_dict:
+            if loss is not None:
+                return (loss,) + decoder_outputs + encoder_outputs
+            else:
+                return decoder_outputs + encoder_outputs
+
+        return Seq2SeqLMOutput(
+            loss=loss,
+            logits=decoder_outputs.logits + decoder_outputs.logits,
+            past_key_values=decoder_outputs.past_key_values,
+            decoder_hidden_states=decoder_outputs.hidden_states,
+            decoder_attentions=decoder_outputs.attentions,
+            cross_attentions=decoder_outputs.cross_attentions,
+            encoder_last_hidden_state=encoder_outputs.last_hidden_state,
+            encoder_hidden_states=encoder_outputs.hidden_states,
+            encoder_attentions=encoder_outputs.attentions,
+        )
+
+
+def getDualDecoderModel(use_config=False, device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+):
+    model = MyDualDecoderVisionEncoderDecoderModel.from_pretrained("microsoft/trocr-small-handwritten")
+    model.to(device)
+
+    # set special tokens used for creating the decoder_input_ids from the labels
+    model.config.decoder_start_token_id = processor.tokenizer.cls_token_id
+    model.config.pad_token_id = processor.tokenizer.pad_token_id
+    # make sure vocab size is set correctly
+    model.config.vocab_size = model.config.decoder.vocab_size
+
+    if use_config:
+        # set beam search parameters
+        model.config.eos_token_id = processor.tokenizer.sep_token_id
+        model.config.max_length = 64
+        model.config.early_stopping = True
+        model.config.no_repeat_ngram_size = 3
+        model.config.length_penalty = 2.0
+        model.config.num_beams = 4
+
+    return model
+
