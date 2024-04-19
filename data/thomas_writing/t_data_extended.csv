@@ -1,0 +1,122 @@
+file_name,text
+t1.png,Text recognition is a long standing research problem.
+t2.png,Optical Character Recognition (OCR) is the electronic
+t3.png,TrOCR is built up with the Transformer architecture.
+t4.png,When loading the above models to the decoders
+t5.png,The structures do not precisely match
+t6.png,We use the text-recognition task for pre-training
+t7.png,Except for the exerpiments regarding scene text recognition
+t8.png,Six kinds of image transformations plus keeping the original.
+t9.png,To build a large-scale high-quality dataset.
+t10.png,We sample two million documents.
+t11.png,We use 5247 handwritten texts to synthesize handwriting.
+t12.png,Table 1 shows the results of combined models.
+t13.png,From the results we observe that the BEiT encoders show
+t14.png,For text recognition the most popular approaches.
+t15.png,Apple has finally pulled its expensive car dreams
+t16.png,The timing is good as its other ambitious reguire alot
+t17.png,The Wall Street Journal reports
+t18.png,Neither are terribly surprising moves
+t19.png,The car effort has been underway for at least a decade
+t20.png,with various starts ad stops but made little sense
+t21.png,and powerful reasons to avoid lower margin business
+t22.png,Generative AI meanwhile is the hottest thing in tech
+t23.png,It is now the prime focus of Apple's big-tech competitors
+t24.png,has turned chip maker Nvidia into third
+t25.png,most valuable U.S. company -- behind Apple and Microsoft
+t26.png,And Apple's perceived lagging in the AI race has
+t27.png,Microsoft's shares have jumped 10%
+t28.png,Making the company that once actually made the Windows phone
+t29.png,about $280 billion more valuable than the company
+t30.png,But even a cheaper Apple has no shortage of
+t31.png,Meta Platforms spent on average on capex over
+t32.png,the same period according to S&P Global Market Intelligence
+t33.png,A smarter Siri might actually be worth buying
+t34.png,California is living up to its reputation
+t35.png,as the entertainment capitol of the world
+t36.png,witness the political circus unfolding in Sacremento
+t37.png,Democrats last autumn enacted a bill that raised the
+t38.png,state minimum wage for fast-food workers to $20 an hour
+t39.png,But what do you know
+t40.png,The legislation carve out an odd exemption
+t41.png,for restaurants that produce and sellbread
+t42.png,which appears to cover only Panera and a couple of
+t43.png,Bloomberg New reported this week that Mr. Newson
+t44.png,According to our sources the Service Employees
+t45.png,Exuberance is back in markets
+t46.png,A frenzy over artifical-intelligence technology
+t47.png,has stoked a monster run  in Nvidia technology
+t48.png,Major stock indexes are clinching repeated records
+t49.png,And even bitcoin is threatening to set a new high
+t50.png,In times like these financial advisors caution clients
+t51.png,not to let a fear of missing out drive decision-making
+t52.png,They encourage them to diversify their holdings
+t53.png,Nevertheless stock-market records ofteh happen in clusters
+t54.png,with euphoria running high we talked to four everyday
+t55.png,Sitting in cash is tempting but could be costly
+t56.png,Among his recent stock purchases were Arbor Reality Trust
+t57.png,The real estate lender's shares fell 15% this year
+t58.png,But don't be afraid to have fun
+t59.png,This year he has realloacted about one-third
+t60.png,He bought shares of the small-cap focused iShares
+t61.png,They're kind of like lottery tickets
+t62.png,Deep generative models have achieved tremendos results
+t63.png,in designing novel drug molecules in recent years
+t64.png,A new thread of work has shown great potential
+t65.png,in advancing the speficificty and success rate
+t66.png,of in silico drug design by considering
+t67.png,the structure of protein pockets
+t68.png,This setting posts fundamental computational challenges
+t69.png,in sampling new chemical compounds
+t70.png,that could satisfy multiple geometric constraints
+t71.png,Previous sampling algorithms sample in graph space
+t72.png,or only consider the 3D coordinates
+t73.png,of atoms while ignoring other detailed chemical
+t74.png,structures such as bond tuypes and functional groups
+t75.png,To address the challenge we develop
+t76.png,an equivariant generative network composed of
+t77.png,Medicine have been found to be active in cellular
+t78.png,The main intuition of these generative models
+t79.png,is to efficiently represent all collected chemical
+t80.png,structures in a compact low dimensional space
+t81.png,and sample new drug candidates by perturbing
+t82.png,However at molecular level a small
+t83.png,molecule inhibits or activates particular
+t84.png,biological functions only by binding
+t85.png,to a specific protein pocket of
+t86.png,It can be expected that drug design ignoring
+t87.png,the target protein pockets could
+t88.png,significantly reduce success rate of downstream
+t89.png,In this modified version of the code
+t90.png,before adding bonds to the molecule
+t91.png,we create a set to store unique
+t92.png,We convert each bond tuple to a sorted
+t93.png,to ensure uniqueness regardless of order of atoms
+t94.png,This prevents dupplicate bonds from being added
+t95.png,Finally we iterave over unique bonds
+t96.png,and add them to the molecule
+t97.png,I can't access external links or specific files
+t98.png,including the one you provided
+t99.png,However if you could provede the key points
+t100.png,or the main findings of the paper
+t101.png,The quick brown fox jumped over the lazy dog
+t102.png,Appear weak when you are strong and strong when you are weak
+t103.png,The supreme art of war is to subdue the enemy without fighting
+t104.png,If you know the enemy and know yoursef
+t105.png,you need not fear the result of a hundred battles
+t106.png,If you know yourself but not the enemy
+t107.png,for every victory gaind you will also suffer a defeat
+t108.png,If you know neither the enemy nor yourself
+t109.png,you will succumb in every battle
+t110.png,Let your plans be dark and impenetrable at night
+t111.png,and when you move fall like a thunderbolt
+t112.png,In the midst of chaos there is also opportunity
+t113.png,Supreme excellence consists of breaking the enemy's resistance
+t114.png,All warfare is based on deception
+t115.png,Hence when we are able to attak
+t116.png,we must seem unable
+t117.png,when using our forces we must appear inactive
+t118.png,when we are near we must make the enemy
+t119.png,believe we are far away
+t120.png,when far away we must make him
+t121.png,beleive we are near
