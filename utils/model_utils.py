@@ -308,7 +308,7 @@ class IAM_MAML_Outer(Dataset):
         dataset = IAMDatasetFromList(self.wd[index], self.processor, self.max_target_length)
         return DataLoader(dataset, batch_size=self.inner_batch_size)
 
-def get_dataloaders(dataset_type='t', test_size=0.2, batch_size=4, root='', test=False, transform=None, extended_thomas=False):
+def get_dataloaders(dataset_type='t', test_size=0.2, batch_size=4, root='', test=False, transform=None, extended_thomas=False, thomas_spliting_tricks=False):
 
     if dataset_type=='t':
         root = Path(__file__).parents[1]
@@ -316,7 +316,13 @@ def get_dataloaders(dataset_type='t', test_size=0.2, batch_size=4, root='', test
             df = pd.read_csv(f'{root}/data/thomas_writing/t_data_extended.csv')
         else:
             df = pd.read_csv(f'{root}/data/thomas_writing/t_data.csv')
-        train_df, test_df = train_test_split(df, test_size=test_size)
+        
+        if thomas_spliting_tricks:
+            assert df.shape[0] == 121
+            train_df = df[:101]
+            test_df = df[101:]
+        else:
+            train_df, test_df = train_test_split(df, test_size=test_size)
         # we reset the indices to start from zero
         train_df.reset_index(drop=True, inplace=True)
         test_df.reset_index(drop=True, inplace=True)
