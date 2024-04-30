@@ -412,12 +412,12 @@ def get_dataloaders(dataset_type='t', test_size=0.2, batch_size=4, root='', test
 def classify_img(img, model):
   model.eval()
 
-  pixel_values = processor(images=img, return_tensors="pt").pixel_values.to(device)
+  pixel_values = processor(images=img, return_tensors="pt").pixel_values.to(model.device)
 
   generated_ids = model.generate(pixel_values, max_length=10)
   generated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
 
-  print(generated_text)
+  return generated_text
 
 
 from transformers import VisionEncoderDecoderModel
