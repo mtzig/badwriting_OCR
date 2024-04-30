@@ -45,8 +45,8 @@ def compute_cer(pred_ids, label_ids, as_strings=False, debug=False):
         label_ids[label_ids == -100] = processor.tokenizer.pad_token_id
         label_str = processor.batch_decode(label_ids, skip_special_tokens=True)
     else:
-        pred_str = pred_ids
-        label_str = label_ids
+        pred_str = [pred_ids]
+        label_str = [label_ids]
     if debug:
         print(pred_str, label_str)
     cer = cer_metric.compute(predictions=pred_str, references=label_str)
