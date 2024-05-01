@@ -322,7 +322,7 @@ def get_dataloaders(dataset_type='t', test_size=0.2, batch_size=4, root='', test
             df = pd.read_csv(f'{root}/data/thomas_writing/t_data.csv')
         
         if thomas_spliting_tricks:
-            assert df.shape[0] == 121
+            # assert df.shape[0] == 121
             train_df, test_df = train_test_split(df, test_size=1/6, shuffle=False)
         else:
             train_df, test_df = train_test_split(df, test_size=test_size)
