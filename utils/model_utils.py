@@ -418,7 +418,7 @@ def classify_img(img, model):
 
   pixel_values = processor(images=img, return_tensors="pt").pixel_values.to(model.device)
 
-  generated_ids = model.generate(pixel_values, max_length=10)
+  generated_ids = model.generate(pixel_values, max_length=20)
   generated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
 
   return generated_text
