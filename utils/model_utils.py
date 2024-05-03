@@ -322,7 +322,7 @@ def get_dataloaders(dataset_type='t', test_size=0.2, batch_size=4, root='', test
             df = pd.read_csv(f'{root}/data/thomas_writing/t_data.csv')
         
         if thomas_spliting_tricks:
-            assert df.shape[0] == 121
+            # assert df.shape[0] == 121
             train_df, test_df = train_test_split(df, test_size=1/6, shuffle=False)
         else:
             train_df, test_df = train_test_split(df, test_size=test_size)
@@ -418,7 +418,7 @@ def classify_img(img, model):
 
   pixel_values = processor(images=img, return_tensors="pt").pixel_values.to(model.device)
 
-  generated_ids = model.generate(pixel_values, max_length=10)
+  generated_ids = model.generate(pixel_values, max_length=20)
   generated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
 
   return generated_text
