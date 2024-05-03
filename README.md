@@ -21,7 +21,7 @@ We provide all different checkpoints in google drive: https://drive.google.com/d
 ## The important files in this repo
 Now we list some important Jupyter notebooks and what we used them for:
 - `MAML.ipynb`: produces checkpoint of TrOCR trained on MAML.
-- `Fine_tune_TrOCR_dual_decoder.ipynb`: finetunes TrOCR model using dual decoder moethod.
-- `Fine_tune_TrOCR_adaptor.ipynb`: finetunes TrOCR model using adaptor.
+- `Fine_tune_TrOCR_dual_decoder.ipynb`: finetunes TrOCR model using dual decoder method.
+- `Fine_tune_TrOCR_adaptor.ipynb`: finetunes TrOCR model using adaptor method.
 - `Fine_tune_TrOCR_from_MAML.ipynb`: finetunes TrOCR model using MAML checkpoint as starting point.
-- `Fine_tune_TrOCR_partial_params.ipynb`: finetunes TrOCR model using MAML checkpoint as starting point.
+- `Fine_tune_TrOCR_partial_params.ipynb`: finetunes TrOCR model with different model parameters.
