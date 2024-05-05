@@ -25,3 +25,10 @@ Now we list some important Jupyter notebooks and what we used them for:
 - `Fine_tune_TrOCR_adaptor.ipynb`: finetunes TrOCR model using adaptor method.
 - `Fine_tune_TrOCR_from_MAML.ipynb`: finetunes TrOCR model using MAML checkpoint as starting point.
 - `Fine_tune_TrOCR_partial_params.ipynb`: finetunes TrOCR model with different model parameters.
+
+
+## Reference
+Here are some websites we refer during the coding:
+1. https://huggingface.co/microsoft/trocr-small-handwritten
+2. https://huggingface.co/docs/transformers/en/training
+3. https://github.com/NielsRogge/Transformers-Tutorials/blob/master/TrOCR/Fine_tune_TrOCR_on_IAM_Handwriting_Database_using_native_PyTorch.ipynb
